@@ -1,0 +1,166 @@
+ext.android = [
+        compileSdkVersion: 26,
+        buildToolsVersion: "26.0.0",
+        minSdkVersion    : 16,
+        targetSdkVersion : 26,
+]
+ext.supportVersion = "26.1.0"
+ext.dependencies = [
+        "multidex"               : 'com.google.android:multidex:1.0.1',
+        "appcompat"              : "com.android.support:appcompat-v7:$ext.supportVersion",
+        "BottomNavigationViewEx" : "com.github.ittianyu:BottomNavigationViewEx:1.2.2",
+        "support"                : "com.android.support:support-v4:$ext.supportVersion",
+        "cardview-v7"            : "com.android.support:cardview-v7:$ext.supportVersion",
+        "customtabs"             : "com.android.support:customtabs:$ext.supportVersion",
+        "support-annotations"    : "com.android.support:support-annotations:$ext.supportVersion",
+        "design"                 : "com.android.support:design:$ext.supportVersion",
+        "support-vector-drawable": "com.android.support:support-vector-drawable:$ext.supportVersion",
+        "preference"             : "com.android.support:preference-v7:$ext.supportVersion",
+        "recyclerview-v7"        : "com.android.support:recyclerview-v7:$ext.supportVersion",
+        "constraint-layout"      : "com.android.support.constraint:constraint-layout:1.0.2",
+        "gson"                   : "com.google.code.gson:gson:2.6.2",
+        "logging-interceptor"    : "com.squareup.okhttp3:logging-interceptor:3.0.1",
+        "commons-lang3"          : "org.apache.commons:commons-lang3:3.0",
+        "okio"                   : "com.squareup.okio:okio:1.6.0",
+        "multidex"               : "com.android.support:multidex:1.0.1",
+        "glide"                  : ['com.github.bumptech.glide:glide:4.0.0-RC1', 'com.github.bumptech.glide:compiler:4.0.0-RC1'],
+        'okhttp'                 : ['com.squareup.okhttp3:okhttp:3.8.1', 'com.squareup.okhttp3:logging-interceptor:3.8.1'],
+        'banner'                 : 'com.youth.banner:banner:1.4.9',
+        'butterknife'            : ['com.jakewharton:butterknife:8.8.1'],
+        'anno_butterknife'       : ['com.jakewharton:butterknife-compiler:8.8.1'],
+        'glide-okhttp'           : 'com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1',
+        'amap'                   : ['com.amap.api:location:latest.integration', 'com.amap.api:navi-3dmap:latest.integration', 'com.amap.api:map2d:latest.integration'],
+        'charts'                 : 'com.github.lecho:hellocharts-android:v1.5.8',
+        'media_capture'          : 'com.github.wseemann:FFmpegMediaMetadataRetriever:1.0.14',
+        'retrofit'               : ['com.squareup.retrofit2:retrofit:2.3.0', 'com.squareup.retrofit2:adapter-rxjava2:2.3.0', 'com.squareup.retrofit2:converter-gson:2.3.0'],
+        'rxjava'                 : ['io.reactivex.rxjava2:rxjava:2.0.1', 'io.reactivex.rxjava2:rxandroid:2.0.1']
+]
+
+ext {
+    dependenciesModule = this.&dependenciesModule;
+    dependenciesLib = this.&dependenciesLib;
+    println(' ****************** 全局参数设置  *********************')
+
+    deps = [
+            "app": "appcompat," +
+                    "support," +
+                    "design," +
+                    "multidex," +
+                    "okhttp,butterknife,anno_butterknife,gson,rxjava," +
+                    "retrofit,recyclerview-v7,constraint-layout",
+            "gomvp"  : 'appcompat,support,okhttp,gson,retrofit,rxjava,support-annotations'
+    ]
+
+    excludeModule = [
+    ]
+    excludeGroup = [
+    ]
+    //调试模式子工程模块，从配置文件中动态读取
+    debugModules = []
+    //发布调试模式子工程模块，从配置文件中动态读取
+    releaseModules = []
+    //混淆文件，自动从使用的子模块中查找抽取
+    allProguards = []
+    def properties = new Properties()
+    File setting = new File(rootProject.rootDir, 'local.properties');
+    if (setting.exists()) {
+        properties.load(setting.newDataInputStream())
+        if (properties.getProperty('config') == null)
+            setting = null
+        else
+            properties.load(new File(rootProject.rootDir, properties.getProperty('config')).newDataInputStream())
+    }
+    if (setting == null || !setting.exists()) {
+        properties.load(new File(rootProject.rootDir, 'properties/app-release.properties').newDataInputStream())
+    }
+
+
+
+
+    if (properties.getProperty('debug') != null) {
+        debugModules = properties.getProperty('debug').split(',')
+        debugModules.each { name ->
+            def profile = new File(rootProject.rootDir, 'dep/' + name + '/proguard-rules.pro')
+            if (profile.exists()) {
+                allProguards += profile
+                println(' --> 全局配置混淆文件(debug)：' + profile)
+            }
+        }
+    }
+
+    if (properties.getProperty('release') != null) {
+        releaseModules = properties.getProperty('release').split(',')
+        releaseModules.each { name ->
+            def profile = new File(rootProject.rootDir, 'dep/' + name + '/proguard-rules.pro')
+            if (profile.exists()) {
+                allProguards += profile
+                println(' --> 全局配置混淆文件(release)：' + profile)
+            }
+        }
+    }
+    println(' ------------------ 全局参数设置 结束！！ ------------------')
+}
+
+def dependenciesModule() {
+    project.dependencies {
+        //定义在config.gradle数组中，基于项目名称配置的所有dependencies，方便上层app项目直接导入对应的依赖库
+        project.ext.deps[project.name].split(',').each { name ->
+            def depName = name.trim()
+            def depItem = project.ext.dependencies[depName]
+            if(depName.startsWith("anno_")) {
+                annotationProcessor depItem
+                println(project.name + '-+ annotationProcessor -> ' + depItem)
+            } else {
+                implementation depItem
+                println(project.name + '-+ implementation -> ' + project.ext.dependencies[depName])
+            }
+        }
+    }
+}
+
+/**
+ * 主项目到底是依赖lib还是aar
+ * @return
+ */
+def dependenciesLib() {
+    project.dependencies {
+        project.ext.debugModules.each { name ->
+            name = name.trim()
+            def tmp = name.split('/')
+            def prjname = tmp.length > 1 ? tmp[tmp.length - 1] : name
+            implementation project(':' + prjname)
+            println(project.name + '-+ Debug Module Project:' + prjname)
+        }
+        project.ext.releaseModules.each { name ->
+            name = name.trim()
+            def tmp = name.split('/')
+            def prjname = tmp.length > 1 ? tmp[tmp.length - 1] : name
+            implementation(name: prjname, ext: 'aar')
+            println('Use Release Module aar:' + prjname)
+        }
+    }
+}
+
+/**
+ * 生成aarTask
+ */
+task("build" + project.name) {
+    group 'build'
+    dependsOn 'assembleRelease'
+    def outputName = project.name + ".aar"
+    def releaseName = project.name + "-release.aar"
+    def aarPath = rootProject.getRootDir().path + "/dep/aar"
+    doLast {
+        task(deleteAarFilesRelease, type: Delete) {
+            delete aarPath + outputName
+        }.execute()
+
+        task(copyAarRelease, type: Copy) {
+            from('build/outputs/aar') {
+                include releaseName
+            }
+            into aarPath
+            rename releaseName, outputName
+        }.execute()
+    }
+}
