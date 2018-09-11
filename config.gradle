@@ -27,7 +27,7 @@ ext.dependencies = [
         'okhttp'                 : ['com.squareup.okhttp3:okhttp:3.8.1', 'com.squareup.okhttp3:logging-interceptor:3.8.1'],
         'banner'                 : 'com.youth.banner:banner:1.4.9',
         'butterknife'            : ['com.jakewharton:butterknife:8.8.1'],
-        'anno_butterknife'       : ['com.jakewharton:butterknife-compiler:8.8.1'],
+        'kapt_butterknife'       : ['com.jakewharton:butterknife-compiler:8.8.1'],
         'glide-okhttp'           : 'com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1',
         'amap'                   : ['com.amap.api:location:latest.integration', 'com.amap.api:navi-3dmap:latest.integration', 'com.amap.api:map2d:latest.integration'],
         'charts'                 : 'com.github.lecho:hellocharts-android:v1.5.8',
@@ -46,9 +46,9 @@ ext {
                     "support," +
                     "design," +
                     "multidex," +
-                    "okhttp,butterknife,anno_butterknife,gson,rxjava," +
+                    "okhttp,butterknife,kapt_butterknife,gson,rxjava," +
                     "retrofit,recyclerview-v7,constraint-layout",
-            "gomvp"  : 'appcompat,support,okhttp,gson,retrofit,rxjava,support-annotations'
+            "gomvp"  : 'appcompat,support,okhttp,gson,retrofit,rxjava,support-annotations,butterknife,kapt_butterknife'
     ]
 
     excludeModule = [
@@ -110,6 +110,9 @@ def dependenciesModule() {
             if(depName.startsWith("anno_")) {
                 annotationProcessor depItem
                 println(project.name + '-+ annotationProcessor -> ' + depItem)
+            } else if(depName.startsWith("kapt_")) {
+                kapt depItem
+                println(project.name + '-+ kapt -> ' + depItem)
             } else {
                 implementation depItem
                 println(project.name + '-+ implementation -> ' + project.ext.dependencies[depName])
