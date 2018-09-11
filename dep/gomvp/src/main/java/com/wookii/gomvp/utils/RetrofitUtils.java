@@ -1,4 +1,4 @@
-package com.wookii.gomvp;
+package com.wookii.gomvp.utils;
 
 import android.util.Base64;
 
@@ -25,10 +25,10 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class RetrofitUtils {
 
     private static RetrofitUtils instance;
-    public static String BASE_URL = "";
+    private static String BASE_URL = "";
     private Retrofit mRetrofit;
 
-    public RetrofitUtils() {
+    private RetrofitUtils() {
         configRetrofit();
     }
 
@@ -51,9 +51,8 @@ public class RetrofitUtils {
     }
 
     public OkHttpClient getCallFactory() {
-        okhttp3.OkHttpClient okHttpClient = (OkHttpClient) mRetrofit.callFactory();
 
-        return okHttpClient;
+        return (OkHttpClient) mRetrofit.callFactory();
     }
 
 //    public String getCurrentRquestApi(OkHttpClient client) {
@@ -69,12 +68,11 @@ public class RetrofitUtils {
      * @return
      */
     private OkHttpClient buildClient() {
-        OkHttpClient client = new OkHttpClient.Builder()
+        return new OkHttpClient.Builder()
                 .addInterceptor(logging())
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .readTimeout(10, TimeUnit.SECONDS)
                 .build();
-        return client;
     }
 
     private HttpLoggingInterceptor logging() {
@@ -93,7 +91,7 @@ public class RetrofitUtils {
      */
     public static String getSignature(HashMap<String,String> params, String secret) throws IOException {
         // 先将参数以其参数名的字典序升序进行排序
-        Map<String,String> sortedParams = new TreeMap<String,String>(params);
+        Map<String,String> sortedParams = new TreeMap<>(params);
         Set<Map.Entry<String,String>> entrySet = sortedParams.entrySet();
 
         // 遍历排序后的字典，将所有参数按"key=value"格式拼接在一起
@@ -117,7 +115,7 @@ public class RetrofitUtils {
         try {
             MessageDigest md5 = MessageDigest.getInstance("MD5");
             byte[] bytes = md5.digest(baseString.toString().getBytes("UTF-8"));
-            return Base64.encodeToString(bytes,Base64.DEFAULT);
+            return Base64.encodeToString(bytes, Base64.DEFAULT);
         } catch (GeneralSecurityException ex) {
             throw new IOException(ex);
         }

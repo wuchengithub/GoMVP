@@ -1,4 +1,4 @@
-package com.wookii.gomvp;
+package com.wookii.gomvp.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -13,7 +13,7 @@ public class SharedPUtil {
         SharedPreferences sp = context.getSharedPreferences(SP_FILE_NAME, 0);
         SharedPreferences.Editor editor = sp.edit();
         editor.putString(key, value);
-        editor.commit();
+        editor.apply();
     }
 
     public static String getParam(Context context, String key) {
@@ -26,7 +26,7 @@ public class SharedPUtil {
             SharedPreferences ex = context.getSharedPreferences(SP_FILE_NAME, 0);
             SharedPreferences.Editor editor = ex.edit();
             editor.clear();
-            editor.commit();
+            editor.apply();
             return true;
         } catch (Exception var3) {
             return false;

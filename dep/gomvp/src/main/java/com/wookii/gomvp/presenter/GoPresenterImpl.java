@@ -1,11 +1,17 @@
-package com.wookii.gomvp;
+package com.wookii.gomvp.presenter;
 
 import android.content.Context;
 import android.text.TextUtils;
-import android.util.Log;
 import android.util.Pair;
 
 import com.google.gson.Gson;
+import com.wookii.gomvp.GoLog;
+import com.wookii.gomvp.Jumper;
+import com.wookii.gomvp.utils.RetrofitConverter;
+import com.wookii.gomvp.adapter.PresenterAdapter;
+import com.wookii.gomvp.respository.GoDataSource;
+import com.wookii.gomvp.view.IGoView;
+import com.wookii.gomvp.view.ILoadingView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,30 +27,39 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
  * Created by wuchen on 2017/11/11.
  */
 
-public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSource>, Observer<T> {
+public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoDataSource>, Observer<T> {
 
     private static final String TAG = "BasePresenter";
-    private GoView view;
+    private IGoView view;
     private GoDataSource model;
     protected T value;
     private PresenterAdapter createLoaderListener;
-    private PresenterAdapter presenterAdapter;
-    protected RetrofitUtils retrofitUtils;
-    private boolean cacheError;
+    private ILoadingView loadingView;
+    protected GoLog logger;
+    private String jsonString;
 
-    protected BasePresenter(){
-        this.model = onModel();
-        retrofitUtils = RetrofitUtils.getInstance();
+    public PresenterAdapter getPresenterAdapter() {
+        return presenterAdapter;
     }
 
-    protected abstract GoDataSource onModel();
+    protected void setPresenterAdapter(PresenterAdapter presenterAdapter) {
+        this.presenterAdapter = presenterAdapter;
+    }
+
+    private PresenterAdapter presenterAdapter;
+    private boolean cacheError;
+    protected LifecycleListener lifecycleListener;
+
+    protected GoPresenterImpl(){
+    }
+
     @Override
-    public void setView(GoView view) {
+    public void setView(IGoView view) {
         this.view = view;
     }
 
     @Override
-    public GoView getView() {
+    public IGoView getView() {
         return view;
     }
 
@@ -52,13 +67,21 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
     public T getCache(Class<T> clazz) {
         checkNotNull(clazz);
         if(model != null) {
-            String s = (String)model.getCacher().onGet(clazz.getName());
+            String s = (String)model.getGoCache().onGet(clazz.getName());
             Gson gson = new Gson();
             return gson.fromJson(s, clazz);
         }
         return null;
     }
 
+    @Override
+    public void setLog(GoLog log) {
+        this.logger = log;
+    }
+
+    public void registerLoadingView(ILoadingView loadingView) {
+        this.loadingView = loadingView;
+    }
     @Override
     public void setCreateAdapter(PresenterAdapter createLoaderListener) {
         this.createLoaderListener = createLoaderListener;
@@ -69,9 +92,8 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
     }
 
     @Override
-    public void setModel(GoDataSource model) {
+    public void setRepository(GoDataSource model) {
         this.model = model;
-        model.addContentObserver(this);
     }
 
     /**
@@ -80,18 +102,20 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
      */
     @Override
     public void setObserver(Observer observer) {
-        this.model.addContentObserver(observer);
-    }
-
-    @Override
-    public GoDataSource createModel(Observer observer) {
-        return new GoRepository(observer);
+        this.model.onObserver(observer);
     }
 
     @Override
     public GoDataSource loadData() {
-
+        if(loadingView != null) {
+            loadingView.onLoading();
+        }
         return model.loadDataFromRepository();
+    }
+
+    @Override
+    public String getResponseString() {
+        return jsonString;
     }
 
     @Override
@@ -100,9 +124,10 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
         Jumper.trueJump(new Jumper.JumperStation() {
             @Override
             public void onJump() {
-                Pair<String, String> success = presenterAdapter.onSuccessCode();
+                Pair<String, String> success = model.onSuccessCode();
                 String json = valueToJsonString(value);
-                String successCode = getSuccessCode(json, success.first);
+                jsonString = json;
+                String successCode = getFieldValue(json, success.first);
                 if(TextUtils.equals(successCode, success.second)) {
                     successful(json, value);
                 } else {
@@ -124,41 +149,48 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
             }
 
         });
-        Log.i(TAG, valueToJsonString(value));
+
+        GoLog.I(valueToJsonString(value));
 
     }
 
     private void error(String json, T value) {
+        if(loadingView != null) {
+            loadingView.onLoadingFinish();
+        }
         //通知view
-        view.showDataError(BasePresenter.this);
+        view.showDataError(GoPresenterImpl.this, getFieldValue(json, "message"));
         T data = getValue();
-        String className = value.getClass().getName().toString();
+        String className = value.getClass().getName();
         model = getModel();
-        GoDataSource.Cacher cacher = model.getCacher();
+        GoDataSource.GoCache goCache = model.getGoCache();
         //属否缓存
-        if(cacher != null && isCacheError()) {
-            cacher.onAdd(className, json);
+        if(goCache != null && isCacheError()) {
+            goCache.onAdd(className, json);
         }
     }
 
     private void successful(String json, T value) {
+        if(loadingView != null) {
+            loadingView.onLoadingFinish();
+        }
         //通知view
-        view.receiverData(BasePresenter.this);
+        view.receiverData(GoPresenterImpl.this);
         T data = getValue();
-        String className = value.getClass().getName().toString();
+        String className = value.getClass().getName();
         model = getModel();
-        GoDataSource.Cacher cacher = model.getCacher();
+        GoDataSource.GoCache goCache = model.getGoCache();
         //属否缓存
-        if(cacher != null) {
-            cacher.onAdd(className, json);
+        if(goCache != null) {
+            goCache.onAdd(className, json);
         }
     }
 
-    public String valueToJsonString(T value) {
+    private String valueToJsonString(T value) {
         return new Gson().toJson(value);
     }
 
-    public String getSuccessCode(String json, String key) {
+    private String getFieldValue(String json, String key) {
         try {
             JSONObject object = new JSONObject(json);
             return object.getString(key);
@@ -167,11 +199,7 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
         }
         return null;
     }
-    @Override
-    public GoDataSource createModel() {
-        return null;
-    }
-
+    
     @Override
     public void onSubscribe(Disposable d) {
         CompositeDisposable disposable = new CompositeDisposable();
@@ -181,7 +209,8 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
 
     @Override
     public void onError(Throwable e) {
-        //view.showDataError(e.getMessage());
+        GoLog.E(e.getMessage());
+        view.showDataError(GoPresenterImpl.this, "请求失败");
     }
 
     @Override
@@ -192,28 +221,31 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
     @Override
     public GoPresenter bindPresenterAdapter(PresenterAdapter presenterAdapter) {
         this.presenterAdapter = presenterAdapter;
+        this.presenterAdapter.setPresenter(this);
         return this;
     }
 
     @Override
     public void request(final Context context) {
         checkNotNull(presenterAdapter);
-        checkNotNull(retrofitUtils);
+        if(this.model ==  null) {
+            this.model = onModel();
+        }
         checkNotNull(model);
-        Observable observable = presenterAdapter.onCreateObservable(retrofitUtils);
+        RetrofitConverter retrofitConverter = this.model.onCreateRetrofitConverter();
+        checkNotNull(retrofitConverter);
+        Observable observable = presenterAdapter.onCreateObservable(retrofitConverter);
         if(observable == null) {
             //do nothing
             return;
         }
-        GoRepository goRepository = new GoRepository.Builder<T>()
-                .retrofit(observable)
-                .cache(new DefaultCacher(context))
-                .build();
-        setModel(goRepository);
+        setRepository(model);
+        getModel().onObservable(observable);
+        getModel().onObserver(this);
         loadData();
     }
 
-    public GoDataSource getModel() {
+    private GoDataSource getModel() {
 
         return model;
     }
@@ -227,7 +259,15 @@ public abstract class BasePresenter<T> implements GoPresenter<T,GoView,GoDataSou
         this.cacheError = b;
     }
 
-    public boolean isCacheError() {
+    private boolean isCacheError() {
         return cacheError;
+    }
+
+    public void addLifecycleListener(LifecycleListener lifecycleListener) {
+        this.lifecycleListener = lifecycleListener;
+    }
+
+    public interface LifecycleListener {
+        void onCreate(Context context);
     }
 }

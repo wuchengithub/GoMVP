@@ -15,7 +15,7 @@ public class Jumper {
     public Jumper() {
     }
 
-    public Jumper(@NonNull JumperStation station) {
+    private Jumper(@NonNull JumperStation station) {
         checkNotNull(station);
         this.station = station;
     }

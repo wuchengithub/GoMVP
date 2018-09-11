@@ -1,11 +1,41 @@
 apply plugin: 'com.android.library'
 apply from: rootProject.getRootDir().getAbsolutePath() + "/config.gradle"
-
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 
+android {
+    compileSdkVersion 26
 
-version = "1.0.1"
+
+
+    defaultConfig {
+        minSdkVersion 16
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    sourceSets {
+        main {
+            java {
+                srcDirs 'src/java'
+            }
+        }
+    }
+}
+
+version = "1.0.2"
 
 def siteUrl = 'https://github.com/wuchengithub/GoMVP'      // 项目的主页
 def gitUrl = 'https://github.com/wuchengithub/GoMVP.git'   // Git仓库的url
@@ -42,6 +72,23 @@ install {
         }
     }
 }
+
+task sourcesJar(type: Jar) {
+    from 'src/java'
+    classifier = 'sources'
+}
+task javadoc(type: Javadoc) {
+    source = 'src/java'
+//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
 Properties properties = new Properties()
 properties.load(project.rootProject.file('local.properties').newDataInputStream())
 bintray {
@@ -58,31 +105,8 @@ bintray {
     }
 }
 
-android {
-    compileSdkVersion 26
-
-
-
-    defaultConfig {
-        minSdkVersion 14
-        targetSdkVersion 26
-        versionCode 1
-        versionName "1.0"
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-}
-
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+
     dependenciesModule()
 }

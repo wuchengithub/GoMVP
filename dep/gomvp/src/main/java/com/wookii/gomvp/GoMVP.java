@@ -2,6 +2,12 @@ package com.wookii.gomvp;
 
 import android.support.annotation.Nullable;
 
+import com.wookii.gomvp.presenter.GoPresenterImpl;
+import com.wookii.gomvp.presenter.DefaultPresenter;
+import com.wookii.gomvp.presenter.GoPresenter;
+import com.wookii.gomvp.respository.GoDataSource;
+import com.wookii.gomvp.view.IGoView;
+
 import io.reactivex.Observer;
 
 import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
@@ -11,47 +17,54 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
  */
 
 public final class GoMVP {
-    private GoView view;
     private GoPresenter presenter;
-    private GoDataSource model;
-    private Observer observer;
 
-    private GoMVP(GoView view, GoPresenter presenter, GoDataSource model, @Nullable Observer observer) {
-        this.view = view;
+    private GoMVP(IGoView view, GoPresenter presenter, GoDataSource model, @Nullable Observer observer, GoLog log) {
         this.presenter = presenter;
-        this.model = model;
-        this.observer = observer;
         if (presenter == null) {
             presenter = new DefaultPresenter();
         }
-        presenter.setView(view);
-        if(model != null) {
-            presenter.setModel(model);
+        if(view != null) {
+            presenter.setView(view);
         }
-        presenter.setObserver(observer);
+        if(model != null) {
+            presenter.setRepository(model);
+        }
+        if(observer != null) {
+            presenter.setObserver(observer);
+        }
+        if(log != null) {
+            presenter.setLog(log);
+        }
     }
 
     public static final class Builder {
-        private GoView view;
+        private IGoView view;
         private GoPresenter presenter;
         private GoDataSource model;
         private Observer observer;
+        private GoLog log;
 
         public Builder() {
 
         }
-        public Builder presenter(GoPresenter presenter) {
+        public <T extends GoPresenterImpl> Builder presenter(T presenter) {
             this.presenter = presenter;
             return this;
         }
 
-        public Builder view(GoView view) {
+        public Builder view(IGoView view) {
             this.view = view;
             return this;
         }
 
-        public Builder model(GoDataSource model) {
+        public Builder repository(GoDataSource model) {
             this.model = model;
+            return this;
+        }
+
+        public Builder log(GoLog log) {
+            this.log = log;
             return this;
         }
 
@@ -61,13 +74,12 @@ public final class GoMVP {
         }
 
         public GoMVP build() {
-            checkNotNull(view);
             checkNotNull(presenter);
-            return new GoMVP (view,presenter,model,observer);
+            return new GoMVP(view,presenter,model,observer,log);
         }
     }
 
-    public GoPresenter getPresenter() {
-        return this.presenter;
+    public <T extends GoPresenterImpl> T getPresenter() {
+        return (T) this.presenter;
     }
 }
