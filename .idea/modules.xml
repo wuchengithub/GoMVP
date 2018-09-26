@@ -4,7 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/GoMvp.iml" filepath="$PROJECT_DIR$/GoMvp.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/dep/gomvp/gomvp.iml" filepath="$PROJECT_DIR$/dep/gomvp/gomvp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/buildSrc/buildSrc.iml" filepath="$PROJECT_DIR$/buildSrc/buildSrc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/gomvp/gomvp.iml" filepath="$PROJECT_DIR$/gomvp/gomvp.iml" />
     </modules>
   </component>
 </project>
