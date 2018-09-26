@@ -4,13 +4,6 @@ import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created with IntelliJ IDEA.
- * User: lvqi
- * Date: 2018/1/9
- * Time: 20:43
- * To change this template use File | Settings | File and Code Templates | Includes.
- */
 public class SignUtils {
 
     public static String buildSign(Map<String, String> sParaTemp,

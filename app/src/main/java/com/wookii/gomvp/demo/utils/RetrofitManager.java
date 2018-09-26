@@ -17,10 +17,7 @@ import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-/**
- * Created by Gary on 2016/3/23.
- */
-public class XstoreRetrofitManager {
+public class RetrofitManager {
 
     private static final int DEFAULT_TIMEOUT = 5;
 
@@ -68,16 +65,16 @@ public class XstoreRetrofitManager {
         return logging;
     }
 
-    private XstoreRetrofitManager() {
+    private RetrofitManager() {
     }
 
 
     private static class SingletonHolder {
-        private static final XstoreRetrofitManager INSTANCE = new XstoreRetrofitManager();
+        private static final RetrofitManager INSTANCE = new RetrofitManager();
     }
 
     //获取单例
-    public static XstoreRetrofitManager getInstance() {
+    public static RetrofitManager getInstance() {
         return SingletonHolder.INSTANCE;
     }
 
