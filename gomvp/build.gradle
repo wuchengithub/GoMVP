@@ -25,13 +25,13 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    sourceSets {
-        main {
-            java {
-                srcDirs 'src/java'
-            }
-        }
-    }
+//    sourceSets {
+//        main {
+//            java {
+//                srcDirs 'src/java'
+//            }
+//        }
+//    }
 }
 
 version = "1.3.0"
@@ -73,12 +73,12 @@ install {
 }
 
 task sourcesJar(type: Jar) {
-    from 'src/java'
+    from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
 }
 task javadoc(type: Javadoc) {
-    source = 'src/java'
-//    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
 }
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
@@ -101,6 +101,30 @@ bintray {
         vcsUrl = gitUrl
         licenses = ["Apache-2.0"]
         publish = true
+    }
+}
+
+/**
+ * 生成aarTask
+ */
+task("build" + project.name) {
+    group 'build'
+    dependsOn 'assembleRelease'
+    def outputName = project.name + ".aar"
+    def releaseName = project.name + "-release.aar"
+    def aarPath = rootProject.getRootDir().path + "/aar"
+    doLast {
+        task(deleteAarFilesRelease, type: Delete) {
+            delete aarPath + outputName
+        }.execute()
+
+        task(copyAarRelease, type: Copy) {
+            from('build/outputs/aar') {
+                include releaseName
+            }
+            into aarPath
+            rename releaseName, outputName
+        }.execute()
     }
 }
 

@@ -20,7 +20,7 @@ buildscript {
 allprojects {
     repositories {
         flatDir {
-            dirs 'dep/aar','../dep/aar','../../dep/aar','libs'
+            dirs '/aar','dep/aar','../dep/aar','../../dep/aar','libs'
         }
         google()
         jcenter()
