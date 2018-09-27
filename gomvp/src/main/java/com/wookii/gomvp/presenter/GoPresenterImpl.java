@@ -37,7 +37,6 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
     private IGoView view;
     private GoDataSource model;
     protected T value;
-    private PresenterAdapter createLoaderListener;
     private ExecuteStatusView executeStatusListener;
     protected GoLog logger;
     private String jsonString;
@@ -49,7 +48,7 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
         this.context = context;
     }
 
-    public PresenterAdapter getPresenterAdapter() {
+    public PresenterAdapter getCurrentPresenterAdapter() {
         return presenterAdapter;
     }
 
@@ -91,10 +90,6 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
     public void registerExecuteStatus(ExecuteStatusView executeStatusListener) {
         this.executeStatusListener = executeStatusListener;
     }
-    @Override
-    public void setCreateAdapter(PresenterAdapter createLoaderListener) {
-        this.createLoaderListener = createLoaderListener;
-    }
 
     @Override
     public void setRepository(GoDataSource model) {
@@ -111,7 +106,7 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
     }
 
     @Override
-    public GoDataSource loadData(Observable observable, Observer observer) {
+    public GoDataSource goWork(Observable observable, Observer observer) {
         if(executeStatusListener != null) {
             executeStatusListener.onExecuteBegin();
         }
@@ -167,35 +162,31 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
     }
 
     private void error(String json, T value) {
-        if(executeStatusListener != null) {
-            executeStatusListener.onExecuteFinish();
-        }
-        //通知view
-        view.showDataError(GoPresenterImpl.this, getFieldValue(json, presenterAdapter.onErrorMessageKey()));
-        T data = getValue();
         String className = value.getClass().getName();
-        model = getModel();
         GoDataSource.GoCache goCache = model.getGoCache(context);
         //属否缓存
         if(goCache != null && isCacheError()) {
             goCache.onAdd(className, json);
         }
-    }
-
-    private void successful(String json, T value) {
+        //通知view
+        view.showDataError(GoPresenterImpl.this, getFieldValue(json, presenterAdapter.onErrorMessageKey()));
         if(executeStatusListener != null) {
             executeStatusListener.onExecuteFinish();
         }
-        //通知view
-        view.receiverData(GoPresenterImpl.this);
-        T data = getValue();
+    }
+
+    private void successful(String json, T value) {
         String className = value.getClass().getName();
-        model = getModel();
         GoDataSource.GoCache goCache = model.getGoCache(context);
-        //属否缓存
         if(goCache != null) {
             goCache.onAdd(className, json);
         }
+        //通知view
+        view.receiverData(GoPresenterImpl.this);
+        if(executeStatusListener != null) {
+            executeStatusListener.onExecuteFinish();
+        }
+
     }
 
     private String valueToJsonString(T value) {
@@ -247,18 +238,8 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
         return this;
     }
 
-    @Override
-    public void request() {
-        Observable observable = getObservable(presenterAdapter);
-        if(observable == null) {
-            //do nothing
-            return;
-        }
-        setRepository(model);
-        if(observer == null) {
-            observer = this;
-        }
-        loadData(observable,observer);
+    protected void request() {
+        request(presenterAdapter);
     }
 
     protected void request(PresenterAdapter pd) {
@@ -271,7 +252,8 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
         if(observer == null) {
             observer = this;
         }
-        loadData(observable,observer);
+        onModel().targetClazz(pd.targetBeanType());
+        goWork(observable,observer);
     }
     protected GoDataSource getModel() {
 
@@ -297,7 +279,7 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
 
     private Observable getObservable(PresenterAdapter presenterAdapter) {
         if(presenterAdapter == null) {
-            throw new RuntimeException("no match presenterAdapter, please check request(class)");
+            throw new RuntimeException("no match presenterAdapter, please check execute(class)");
         }
         if(this.model ==  null) {
             this.model = onModel();
@@ -307,6 +289,7 @@ public abstract class GoPresenterImpl<T> implements GoPresenter<T,IGoView,GoData
         bindPresenterAdapter(presenterAdapter);
         return presenterAdapter.onCreateObservable(context, retrofitConverter);
     }
+
 
     public interface LifecycleListener {
         void onCreate(Context context);

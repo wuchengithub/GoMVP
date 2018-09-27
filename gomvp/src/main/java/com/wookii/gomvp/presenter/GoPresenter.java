@@ -20,7 +20,7 @@ public interface GoPresenter<T, V extends IGoView,M extends GoDataSource> {
 
     M onModel();
 
-    M loadData(Observable observable, Observer<T> observer);
+    M goWork(Observable observable, Observer<T> observer);
 
     T getValue();
 
@@ -30,13 +30,9 @@ public interface GoPresenter<T, V extends IGoView,M extends GoDataSource> {
 
     void setObserver(Observer observer);
 
-    void setCreateAdapter(PresenterAdapter onCreateDataLoader);
-
     GoPresenter bindPresenterAdapter(PresenterAdapter presenterAdapter);
 
     GoPresenter unbindPresenterAdapter();
-
-    void request();
 
     T getCache(Class<T> clazz);
 

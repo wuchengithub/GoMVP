@@ -41,13 +41,13 @@ public class MVPAspect {
     @Pointcut("execution(* *..Activity+.onCreate(..))")
     public void activityCreate(){}
 
-//    @Pointcut("execution(* *..Activity+.onCreate(..))")
-//    public void handlerView(){}
+    @Pointcut("execution(* *..Fragment+.onCreateView(..))")
+    public void fragmentCreate(){}
 
     @Pointcut("execution(@com.wookii.gomvp.annotation.DataBack * *(..))")
     public void dataBack(){}
 
-    @Before("activityCreate()")
+    @Before("activityCreate() || fragmentCreate()")
     public void createPresenterForField(JoinPoint joinPoint) throws IllegalAccessException, InstantiationException {
         Object obj = joinPoint.getThis();
         Context context = getContext(obj);

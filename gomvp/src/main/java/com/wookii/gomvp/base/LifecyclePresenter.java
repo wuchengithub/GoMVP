@@ -60,7 +60,7 @@ public class LifecyclePresenter<T> extends GoPresenterImpl<T> implements Lifecyc
         if(lifecycleListener != null) {
             lifecycleListener.onCreate(context);
         }
-        GoLog.D("AssistantPresenter init success:");
+        GoLog.D("presenter init success:");
     }
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     public void starts(){
@@ -70,7 +70,7 @@ public class LifecyclePresenter<T> extends GoPresenterImpl<T> implements Lifecyc
         } else if(activity != null) {
             unbinder = ButterKnife.bind(activity);
         }
-        GoLog.D("AssistantPresenter onStart:" + view);
+        GoLog.D("presenter onStart:" + view);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
@@ -82,9 +82,8 @@ public class LifecyclePresenter<T> extends GoPresenterImpl<T> implements Lifecyc
         if(lifecycle != null) {
             lifecycle.removeObserver(this);
         }
-        setCreateAdapter(null);
         unbindPresenterAdapter();
-        GoLog.D("AssistantPresenter onDestroy");
+        GoLog.D("presenter onDestroy");
     }
 
 
@@ -96,8 +95,10 @@ public class LifecyclePresenter<T> extends GoPresenterImpl<T> implements Lifecyc
         if(onModel() == null) {
             throw new RuntimeException("repository is null, you should be set it !");
         }
-        onModel().targetClazz(presenterAdapter.targetBeanType());
         super.request(presenterAdapter);
+    }
+    public void execute() {
+        super.request();
     }
 
     @Override
