@@ -103,7 +103,7 @@ bintray {
 task("build" + project.name) {
     group 'build'
     dependsOn 'assembleRelease'
-    def outputName = project.name + ".aar"
+    def outputName = project.name + version +".aar"
     def releaseName = project.name + "-release.aar"
     def aarPath = rootProject.getRootDir().path + "/aar"
     doLast {
