@@ -5,11 +5,13 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 
 import com.wookii.gomvp.GoLog;
 import com.wookii.gomvp.GoMVP;
 import com.wookii.gomvp.annotation.DataSource;
+import com.wookii.gomvp.annotation.GoActionBack;
 import com.wookii.gomvp.annotation.GoBack;
 import com.wookii.gomvp.annotation.GoError;
 import com.wookii.gomvp.annotation.Presenter;
@@ -50,6 +52,7 @@ public class MVPAspect {
     @Before("activityCreate() || fragmentCreate()")
     public void createPresenterForField(JoinPoint joinPoint) throws IllegalAccessException, InstantiationException {
         Object obj = joinPoint.getThis();
+        String className = obj.getClass().getName();
         Context context = getContext(obj);
         Class<?> objClass = obj.getClass();
         Field[] declaredFields = objClass.getDeclaredFields();
@@ -61,9 +64,9 @@ public class MVPAspect {
             DataSource repositoryBind = f.getAnnotation(DataSource.class);
             if(repositoryBind != null) {
                 GoDataSource repository = getRepository(context,repositoryBind);
-                GoLog.I("getRepository:" + repository);
+                GoLog.I(className +":getRepository:" + repository);
 
-                GoLog.I("createPresenterForField：presenter annotation not null, createRetrofit presenter!");
+                GoLog.I(className +":createPresenterForField：presenter annotation not null, createRetrofit presenter!");
                 LifecyclePresenter lifecyclePresenter = getLifecyclePresenter(joinPoint, repository, view);
                 f.setAccessible(true);
                 f.set(obj,lifecyclePresenter);
@@ -71,10 +74,10 @@ public class MVPAspect {
             }
 
             Presenter presenterAnnotation = f.getAnnotation(Presenter.class);
-            GoLog.D("inti declaredFields:" + f.getName() + ",type::" + f.getType().getName() + ",annotation:" + presenterAnnotation);
+            GoLog.D(className + ":inti declaredFields:" + f.getName() + ",type::" + f.getType().getName() + ",annotation:" + presenterAnnotation);
             //如果Presenter注解不为null，创建
             if(presenterAnnotation != null) {
-                GoLog.I("createPresenterForField：presenter annotation not null, createRetrofit presenter!");
+                GoLog.I(className +":createPresenterForField：presenter annotation not null, createRetrofit presenter!");
                 LifecyclePresenter lifecyclePresenter = getLifecyclePresenter(joinPoint, null, view);
                 f.setAccessible(true);
                 f.set(obj,lifecyclePresenter);
@@ -92,6 +95,8 @@ public class MVPAspect {
         HashMap<String,Method> dataBack = new HashMap<>();
         //收集GoError方法
         HashMap<String,Method> onError = new HashMap<>();
+        //收集GoActionBack
+        HashMap<String,Method> actionBack = new HashMap<>();
 
         for (Method m:
                 declaredMethods) {
@@ -99,19 +104,30 @@ public class MVPAspect {
             if(goBackAnnotation != null) {
                 String name = m.getParameterTypes()[0].getName();
                 dataBack.put(name, m);
-                GoLog.I("createPresenterForField: DataBack annotation: Method name:" + m.getName() + " type :" + name);
+                GoLog.I("createPresenterForField: GoBack annotation: Method name:" + m.getName() + " type :" + name);
 
             }
+            GoActionBack goActionBack = m.getAnnotation(GoActionBack.class);
+            if(goActionBack != null) {
+                String action = goActionBack.action();
+                if(!TextUtils.isEmpty(action)){
+                    String name = m.getParameterTypes()[0].getName();
+                    actionBack.put(action, m);
+                    GoLog.I("createPresenterForField: GoActionBack annotation: Method name:" + m.getName() + " action :" + action);
+
+                }
+            }
+
             GoError goErrorAnnotation = m.getAnnotation(GoError.class);
             if(goErrorAnnotation != null) {
                 if(m.getParameterTypes().length >= 2) {
                     String name = m.getParameterTypes()[0].getName();
-                    dataBack.put(name, m);
+                    onError.put(name, m);
                 } else {
-                    dataBack.put("String_all", m);
+                    onError.put("String_all", m);
                 }
 
-                GoLog.I("createPresenterForField: DataBack annotation: Method name:" + m.getName() + " type :");
+                GoLog.I("createPresenterForField: GoError annotation: Method name:" + m.getName() + " type :");
 
             }
 
@@ -132,6 +148,10 @@ public class MVPAspect {
             } catch (Exception e) {
 
             }
+        }
+
+        if(actionBack.size() != 0) {
+            view.addGoActionBack(actionBack);
         }
     }
 

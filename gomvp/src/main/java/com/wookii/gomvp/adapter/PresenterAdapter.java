@@ -13,6 +13,4 @@ public abstract class PresenterAdapter implements IPresenterAdapter{
         this.presenter = presenter;
     }
 
-    public abstract  Class targetBeanType();
-
 }

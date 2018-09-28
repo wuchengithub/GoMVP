@@ -15,4 +15,8 @@ public interface IPresenterAdapter {
 
     String onErrorMessageKey();
 
+    Class targetBeanType();
+
+    String action();
+
 }
