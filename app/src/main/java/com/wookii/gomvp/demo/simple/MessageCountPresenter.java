@@ -24,6 +24,11 @@ class MessageCountPresenter extends PresenterAdapter implements InterceptGoBack<
     }
 
     @Override
+    public String action() {
+        return null;
+    }
+
+    @Override
     public Observable onCreateObservable(Context context, RetrofitConverter retrofitConverter) {
         Retrofit retrofit = retrofitConverter.createRetrofit();
         ApiServer apiServer = retrofit.create(ApiServer.class);

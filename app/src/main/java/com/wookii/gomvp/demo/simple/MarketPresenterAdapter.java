@@ -42,4 +42,9 @@ public class MarketPresenterAdapter extends PresenterAdapter {
     public Class targetBeanType() {
         return MarketBean.class;
     }
+
+    @Override
+    public String action() {
+        return null;
+    }
 }

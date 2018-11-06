@@ -62,7 +62,7 @@ public class SimpleDemoActivity extends AppCompatActivity implements GoView<Mark
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.button2:
-                presenter.request();
+//                presenter.request();
                 break;
             case R.id.button3:
                 break;

@@ -1,1 +1,1 @@
-include ':app', ':gomvp'
+include ':app', ':gomvp', ':gomvp-plugin'

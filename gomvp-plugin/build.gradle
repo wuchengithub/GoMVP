@@ -1,0 +1,89 @@
+apply plugin: 'java-library'
+apply plugin: 'groovy'
+//apply plugin: 'maven'
+apply plugin: 'maven-publish'
+
+apply plugin: 'com.jfrog.bintray'
+
+//./gradlew -p gomvp-plugin clean build uploadArchives --info
+//uploadArchives {
+//    repositories.mavenDeployer {
+//        repository(url: 'file:///Users/wuchen/Documents/Android/repo/')
+//        pom.groupId = 'com.gomvp.gradle.plugin'
+//        pom.artifactId = 'gomvp-plugin'
+//        pom.version = '1.0.5'    	}
+//}
+group 'com.gomvp.gradle.plugin'
+
+version = "1.0.0"
+
+def siteUrl = 'https://github.com/wuchengithub/GoMVP'      // 项目的主页
+def gitUrl = 'https://github.com/wuchengithub/GoMVP.git'   // Git仓库的url
+
+publishing {
+    publications {
+        plugin(MavenPublication) {
+            from components.java
+            //如果不指定，默认就是工程名
+            artifactId 'gomvp-plugin'
+
+            artifact sourcesJar
+            artifact docJar
+
+            //pom文件配置
+            pom.withXml {
+                def root = asNode()
+                def licensesNode = root.appendNode('licenses').appendNode('license')
+                licensesNode.appendNode('name', 'Apache License, Version 2.0')
+                licensesNode.appendNode('url', 'https://www.apache.org/licenses/LICENSE-2.0.txt')
+                licensesNode.appendNode('distribution', 'repo')
+                licensesNode.appendNode('comments', 'A business-friendly OSS license')
+            }
+        }
+    }
+}
+
+task sourcesJar(type: Jar) {
+    baseName 'test'
+    classifier 'sources'//分类器,区分其他jar包
+    from sourceSets.main.allSource
+}
+
+//文档包任务
+task docJar(type: Jar, dependsOn: [javadoc, groovydoc]) {
+    baseName 'test'
+    classifier 'doc'//分类器,区分其他jar包
+    from javadoc.destinationDir, groovydoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives docJar
+}
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    publications = ['plugin']
+    configurations = ['archives']
+    pkg {
+        repo = "wookii"
+        name = "gomvp-plugin"   //发布到JCenter上的项目名字
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation gradleApi()//gradle sdk
+    implementation localGroovy()//groovy
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"

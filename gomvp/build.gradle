@@ -7,8 +7,6 @@ apply plugin: 'com.jfrog.bintray'
 android {
     compileSdkVersion 26
 
-
-
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 26
@@ -123,20 +121,20 @@ task("build" + project.name) {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation Libs.support_v4
-    implementation Libs.support_v7
-    api Libs.okhttp
-    api Libs.okhttp_logging
-    api Libs.retrofit
-    api Libs.retrofit_gson
-    api Libs.retrofit_rxjava
-    api Libs.rxandroid
-    api Libs.rxjava2
-    api Libs.gson
-    implementation Libs.support_annotation
-    implementation Libs.butternife
-    kapt Libs.butternife_processor
-    implementation Libs.aspectJ
+    implementation libs.support_v4
+    implementation libs.support_v7
+    api libs.okhttp
+    api libs.okhttp_logging
+    api libs.retrofit
+    api libs.retrofit_gson
+    api libs.retrofit_rxjava
+    api libs.rxandroid
+    api libs.rxjava2
+    api libs.gson
+    implementation libs.support_annotation
+    implementation libs.butternife
+    kapt libs.butternife_processor
+    implementation libs.aspectJ
 
 
 }
