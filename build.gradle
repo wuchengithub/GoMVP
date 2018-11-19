@@ -16,7 +16,7 @@ buildscript {
         classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4'
         classpath 'com.hujiang.aspectjx:gradle-android-plugin-aspectjx:2.0.4'
-        classpath 'com.gomvp.gradle.plugin:gomvp-plugin:1.0.1'
+        classpath 'com.gomvp.gradle.plugin:gomvp-plugin:1.0.2'
 
     }
 }

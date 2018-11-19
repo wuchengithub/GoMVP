@@ -3,7 +3,6 @@ package com.wookii.gomvp.demo.repository;
 import android.content.Context;
 
 import com.wookii.gomvp.cache.DefaultGoCache;
-import com.wookii.gomvp.demo.repository.MainRetrofit;
 import com.wookii.gomvp.respository.GoDataSource;
 import com.wookii.gomvp.utils.RetrofitConverter;
 
