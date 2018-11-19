@@ -85,8 +85,12 @@ public class MVPAspect {
             }
 
         }
+        if(view instanceof DefaultView) {
+            handleMethods(objClass, (DefaultView)view);
+        } else {
+            //throw new RuntimeException("if use annotation, do not let Activity ro Fragment implements any View object!");
+        }
 
-        handleMethods(objClass, (DefaultView) view);
     }
 
     private void handleMethods(Class<?> objClass, DefaultView view) {

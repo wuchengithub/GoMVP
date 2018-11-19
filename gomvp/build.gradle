@@ -3,6 +3,8 @@ apply plugin: 'kotlin-android'
 apply plugin: 'com.github.dcendents.android-maven'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'android-aspectjx'
+
 
 android {
     compileSdkVersion 26
@@ -25,7 +27,7 @@ android {
     }
 }
 
-version = "1.3.2"
+version = "1.3.4"
 
 def siteUrl = 'https://github.com/wuchengithub/GoMVP'      // 项目的主页
 def gitUrl = 'https://github.com/wuchengithub/GoMVP.git'   // Git仓库的url
@@ -134,7 +136,4 @@ dependencies {
     implementation libs.support_annotation
     implementation libs.butternife
     kapt libs.butternife_processor
-    implementation libs.aspectJ
-
-
 }
