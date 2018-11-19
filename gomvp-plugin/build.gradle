@@ -15,7 +15,7 @@ apply plugin: 'com.jfrog.bintray'
 //}
 group 'com.gomvp.gradle.plugin'
 
-version = "1.0.1"
+version = "1.0.2"
 
 def siteUrl = 'https://github.com/wuchengithub/GoMVP'      // 项目的主页
 def gitUrl = 'https://github.com/wuchengithub/GoMVP.git'   // Git仓库的url

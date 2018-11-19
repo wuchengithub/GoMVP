@@ -1,7 +1,7 @@
 package com.gomvp.gradle.plugin
 class Version{
     String multidexLibraryVersion = "1.0.2"
-    String supportLibraryVersion = "27.0.2"
+    String supportLibraryVersion = "28.0.0"
     String AAVersion = "4.4.0"
     String glideLibraryVersion = "3.7.0"
     String retrofitLibraryVersion = "2.3.0"
