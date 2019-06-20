@@ -17,21 +17,15 @@ MVP for Android，Based to the AOP.
     buildscript {
         dependencies {
             classpath 'com.android.tools.build:gradle:3.1.3'
-            classpath 'com.hujiang.aspectjx:gradle-android-plugin-aspectjx:2.0.2'//AOP
-            classpath 'com.gomvp.gradle.plugin:gomvp-plugin:1.0.2'//GOMVP插件
-
+            classpath 'com.wookii.plugin:aspectj-plugin:1.0.1'//AOP
         }
     }
-    
-在最下面
-
-    apply plugin: 'gomvp-plugin'
     
 app工程中gradle：
 
     apply plugin: 'com.android.application'
     //添加plugin,基于AOP
-    apply plugin: 'android-aspectjx'
+    apply plugin: 'wookii-plugin-aspectj'
 
 app添加GoMVP依赖：
 
